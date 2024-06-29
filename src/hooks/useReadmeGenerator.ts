@@ -1,10 +1,9 @@
 import { useState, useCallback } from "react";
 import { cognitoAuth } from "../lib/cognito";
 import { toast } from "sonner";
+import { config, getCloudFrontUrl } from "../lib/config";
 
-// SECURE: Use API Gateway endpoints instead of direct AWS SDK
-const API_BASE_URL =
-  "https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod";
+// SECURE: Use API Gateway endpoints from centralized config
 
 export const useReadmeGenerator = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -51,12 +50,12 @@ export const useReadmeGenerator = () => {
           status: "processing",
           createdAt: new Date().toISOString(),
           executionArn: executionArn,
-          pipelineVersion: "ultimate_enterprise_v1.0",
+          pipelineVersion: config.app.pipelineVersion,
         };
 
         console.log("🔧 Creating initial DynamoDB record:", initialRecord);
 
-        const response = await fetch(`${API_BASE_URL}/history`, {
+        const response = await fetch(`${config.api.baseUrl}/history`, {
           method: "POST",
           headers,
           body: JSON.stringify(initialRecord),
@@ -92,7 +91,7 @@ export const useReadmeGenerator = () => {
           const headers = await getAuthHeaders();
 
           // FIXED: No encoding needed - API Gateway handles ARN directly
-          const statusUrl = `${API_BASE_URL}/status/${arn}`;
+          const statusUrl = `${config.api.baseUrl}/status/${arn}`;
 
           console.log("🔧 Original ARN:", arn);
           console.log("🔧 Polling status URL:", statusUrl);
@@ -258,7 +257,7 @@ export const useReadmeGenerator = () => {
 
       try {
         // Get user email from Cognito if available
-        let userEmail = "demo@smartreadmegen.com";
+        let userEmail = config.demo.email;
         try {
           const user = cognitoAuth.getStoredUser();
           if (user?.email) {
@@ -279,7 +278,7 @@ export const useReadmeGenerator = () => {
           github_url: githubUrl,
           user_email: userEmail,
           phase: 3,
-          version: "ultimate_enterprise_v1.0",
+          version: config.app.version,
           features: [
             "real_time_learning",
             "pattern_intelligence",
@@ -290,10 +289,10 @@ export const useReadmeGenerator = () => {
         };
 
         console.log("🔧 Request body:", requestBody);
-        console.log("🔧 Making request to:", `${API_BASE_URL}/generate`);
+        console.log("🔧 Making request to:", `${config.api.baseUrl}/generate`);
 
         // SECURE: Call API Gateway generate endpoint
-        const response = await fetch(`${API_BASE_URL}/generate`, {
+        const response = await fetch(`${config.api.baseUrl}/generate`, {
           method: "POST",
           headers,
           body: JSON.stringify(requestBody),
@@ -360,7 +359,7 @@ export const useReadmeGenerator = () => {
   // Get README URL via CloudFront (public CDN)
   const getREADMEUrl = useCallback((s3Key: string) => {
     if (!s3Key) return null;
-    return `https://d3in1w40kamst9.cloudfront.net/${s3Key}`;
+    return getCloudFrontUrl(s3Key);
   }, []);
 
   // Reset state

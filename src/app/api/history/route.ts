@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { config } from "@/lib/config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Use query parameter instead of path parameter
     const encodedUserId = encodeURIComponent(userId);
-    const apiUrl = `https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod/history?userId=${encodedUserId}`;
+    const apiUrl = `${config.api.baseUrl}/history?userId=${encodedUserId}`;
 
     console.log("🔍 PROXY API - Calling:", apiUrl);
     console.log("🔍 PROXY API - Original userId:", userId);

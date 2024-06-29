@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
+import { fixCloudFrontUrl } from "../lib/config";
+
 export interface ReadmeHistoryItem {
   requestId: string;
   repoId: string;

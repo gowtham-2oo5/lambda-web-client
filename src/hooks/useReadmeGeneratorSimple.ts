@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { cognitoAuth } from '../lib/cognito';
+import { config } from '../lib/config';
 
-const API_BASE_URL = 'https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod';
+// SECURE: Use API Gateway endpoints from centralized config
 
 export const useReadmeGeneratorSimple = () => {
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,7 @@ export const useReadmeGeneratorSimple = () => {
     }
 
     // Fallback to demo email only if nothing else works
-    return 'demo@smartreadmegen.com';
+    return config.demo.email;
   }, []);
 
   // Simple polling function
@@ -60,7 +61,7 @@ export const useReadmeGeneratorSimple = () => {
         setProgress(`🔄 Processing... (${attempts}/${maxAttempts})`);
 
         // FIXED: No encoding needed - API Gateway handles ARN directly
-        const response = await fetch(`${API_BASE_URL}/status/${executionArn}`);
+        const response = await fetch(`${config.api.baseUrl}/status/${executionArn}`);
         
         if (!response.ok) {
           throw new Error(`Status check failed: ${response.status}`);
@@ -111,12 +112,12 @@ export const useReadmeGeneratorSimple = () => {
     setProgress('🚀 Starting README generation...');
 
     try {
-      // FIXED: Get actual user email from Cognito
+      // SECURE: Get actual user email from Cognito
       const userEmail = await getUserEmail();
       console.log('🔧 Using user email:', userEmail);
 
       // Simple POST request to start generation
-      const response = await fetch(`${API_BASE_URL}/generate`, {
+      const response = await fetch(`${config.api.baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
