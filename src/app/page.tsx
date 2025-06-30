@@ -463,11 +463,6 @@ export default function LandingPage() {
                 </CardDescription>
               </CardHeader>
             </Card>
-                  Supports 10+ languages and 15+ frameworks including React,
-                  Vue, Angular, Django, Spring Boot, and more
-                </CardDescription>
-              </CardHeader>
-            </Card>
 
             <Card className="border-neutral-200/50 hover:shadow-2xl transition-all duration-500 bg-white/70 backdrop-blur-sm group hover:border-neutral-300/50 hover:-translate-y-2">
               <CardHeader className="p-8">
