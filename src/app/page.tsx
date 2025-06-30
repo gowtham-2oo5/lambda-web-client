@@ -27,7 +27,7 @@ import { AnimatedBeam } from "@/components/magicui/animated-beam";
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { cn } from "@/lib/utils";
 // import PreviewNavigation from "@/components/PreviewNavigation";
-import PreviewTest from "@/components/PreviewTest";
+// import PreviewTest from "@/components/PreviewTest";
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -530,7 +530,7 @@ export default function LandingPage() {
       {/* <PreviewNavigation /> */}
 
       {/* Preview Test - Quick Test */}
-      <PreviewTest />
+      {/* <PreviewTest /> */}
     </div>
   );
 }
