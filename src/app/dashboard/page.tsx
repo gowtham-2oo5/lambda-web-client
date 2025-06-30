@@ -17,6 +17,7 @@ import { LogOut, User, RefreshCw, FileText, History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useHistory } from "@/hooks/useHistory";
+import { useReadmeGenerator } from "@/hooks/useReadmeGenerator";
 import { cognitoAuth, CognitoUser } from "@/lib/cognito";
 
 // Import our modular components
@@ -34,6 +35,9 @@ export default function DashboardPage() {
 
   // Get user email for history hook - FIXED
   const userEmail = user?.email || "";
+
+  // Get generator progress for active processing items
+  const { progress: generatorProgress, loading: generatorLoading } = useReadmeGenerator();
 
   const {
     historyItems: history,
@@ -243,7 +247,7 @@ export default function DashboardPage() {
                     item={item}
                     onCopy={handleCopy}
                     onDelete={handleDelete}
-                    progress={null}
+                    progress={item.status === 'processing' && generatorLoading ? generatorProgress : null}
                   />
                 ))}
               </div>

@@ -182,16 +182,17 @@ export const useHistory = (userEmail: string) => {
     }
   };
 
-  // Refresh history every 30 seconds to catch new completions
+  // Refresh history every 10 seconds to catch new completions and processing updates
   useEffect(() => {
     if (!userEmail) return;
 
     fetchHistory();
 
+    // More frequent polling for better UX during processing
     const interval = setInterval(() => {
       console.log("🔄 FIXED DASHBOARD - Auto-refreshing history");
       fetchHistory();
-    }, 30000); // 30 seconds
+    }, 10000); // 10 seconds for more responsive updates
 
     return () => clearInterval(interval);
   }, [userEmail, fetchHistory]);

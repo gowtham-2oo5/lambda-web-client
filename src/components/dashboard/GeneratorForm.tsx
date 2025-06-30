@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Loader2, Zap, Brain, Globe } from "lucide-react";
+import { FileText, Loader2, Zap, Brain, Globe, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useReadmeGeneratorSimple } from "@/hooks/useReadmeGeneratorSimple";
+import { useReadmeGenerator } from "@/hooks/useReadmeGenerator";
 
 interface GeneratorFormProps {
   onGenerationComplete?: () => void;
@@ -16,7 +16,7 @@ interface GeneratorFormProps {
 
 const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerationComplete }) => {
   const [githubUrl, setGithubUrl] = useState('');
-  const { generateREADME, loading, result, error, progress, reset } = useReadmeGeneratorSimple();
+  const { generateREADME, loading, result, error, progress, reset } = useReadmeGenerator();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,22 +135,28 @@ const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerationComplete }) =
         {loading && progress && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center space-x-3">
-              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-              <div>
+              <Clock className="w-5 h-5 animate-pulse text-blue-600" />
+              <div className="flex-1">
                 <div className="font-medium text-blue-900">Processing Repository</div>
                 <div className="text-sm text-blue-700">{progress}</div>
+                <div className="mt-2">
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '70%'}}></div>
+                  </div>
+                  <p className="text-xs mt-1 text-blue-600">
+                    This process may take 30-90 seconds for comprehensive analysis
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )}
         
         {/* Success Display */}
-        {result && !loading && (
+        {result && !loading && !error && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✓</span>
-              </div>
+              <CheckCircle className="w-5 h-5 text-green-600" />
               <div>
                 <div className="font-medium text-green-900">README Generated Successfully!</div>
                 <div className="text-sm text-green-700">
@@ -165,9 +171,7 @@ const GeneratorForm: React.FC<GeneratorFormProps> = ({ onGenerationComplete }) =
         {error && !loading && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✕</span>
-              </div>
+              <AlertCircle className="w-5 h-5 text-red-600" />
               <div>
                 <div className="font-medium text-red-900">Generation Failed</div>
                 <div className="text-sm text-red-700">{error}</div>

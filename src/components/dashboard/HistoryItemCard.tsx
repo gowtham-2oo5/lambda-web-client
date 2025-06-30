@@ -135,7 +135,15 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
     // Navigate to dynamic preview route with all metadata
     const previewUrl = `/preview/${encodeURIComponent(item.requestId)}?${params.toString()}`;
     console.log("🔍 FULL PREVIEW DEBUG - Generated preview URL:", previewUrl);
-    router.push(previewUrl);
+    
+    // Open in new tab only if item is still processing
+    if (item.status === 'processing') {
+      console.log("🔍 Opening in new tab - item is processing");
+      window.open(previewUrl, '_blank');
+    } else {
+      console.log("🔍 Opening in same tab - item is completed");
+      router.push(previewUrl);
+    }
   };
 
   const getStatusBadge = () => {

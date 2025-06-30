@@ -34,6 +34,46 @@ export const useReadmeGenerator = () => {
     }
   }, []);
 
+  // Create initial DynamoDB record for processing tracking
+  const createInitialRecord = useCallback(
+    async (githubUrl: string, userEmail: string, executionArn: string) => {
+      try {
+        const headers = await getAuthHeaders();
+        const repoName = githubUrl.split('/').slice(-2).join('/');
+        const requestId = executionArn.split(':').pop() || Date.now().toString();
+
+        const initialRecord = {
+          userId: userEmail,
+          requestId: requestId,
+          repoName: repoName,
+          repoUrl: githubUrl,
+          status: "processing",
+          createdAt: new Date().toISOString(),
+          executionArn: executionArn,
+          pipelineVersion: "ultimate_enterprise_v1.0"
+        };
+
+        console.log("🔧 Creating initial DynamoDB record:", initialRecord);
+
+        const response = await fetch(`${API_BASE_URL}/history`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(initialRecord),
+        });
+
+        if (!response.ok) {
+          console.warn("⚠️ Failed to create initial record, continuing anyway");
+        } else {
+          console.log("✅ Initial processing record created successfully");
+        }
+      } catch (error) {
+        console.warn("⚠️ Error creating initial record:", error);
+        // Don't throw - this is not critical for the generation process
+      }
+    },
+    [getAuthHeaders]
+  );
+
   // SECURE: Poll for completion using API Gateway
   const pollForCompletion = useCallback(
     async (arn: string) => {
@@ -250,22 +290,17 @@ export const useReadmeGenerator = () => {
 
         if (data.executionArn) {
           setExecutionArn(data.executionArn);
-          setProgress("💾 Creating DynamoDB tracking record...");
+          setProgress("🚀 Generation started - creating tracking record...");
           console.log(
             "🔧 Starting polling for execution ARN:",
             data.executionArn
           );
 
+          // Create initial DynamoDB record with processing status
+          await createInitialRecord(githubUrl, userEmail, data.executionArn);
+
           // Poll for completion using secure API Gateway
           await pollForCompletion(data.executionArn);
-        } else if (data.message && data.message.includes("started")) {
-          // Handle case where API returns success message but no executionArn
-          setProgress("✅ Generation started successfully!");
-          setResult({ message: "README generation started successfully" });
-          setLoading(false);
-          toast.success("🎉 Generation Started!", {
-            description: "README generation has been initiated",
-          });
         } else {
           console.error("🔧 No execution ARN in response:", data);
           throw new Error(
@@ -281,13 +316,13 @@ export const useReadmeGenerator = () => {
         });
       }
     },
-    [pollForCompletion, getAuthHeaders]
+    [pollForCompletion, getAuthHeaders, createInitialRecord]
   );
 
   // Get README URL via CloudFront (public CDN)
   const getREADMEUrl = useCallback((s3Key: string) => {
     if (!s3Key) return null;
-    return `https://d3in1w40kamst9.cloudfront.net/${correctS3Key}`;
+    return `https://d3in1w40kamst9.cloudfront.net/${s3Key}`;
   }, []);
 
   // Reset state
