@@ -25,11 +25,12 @@ export interface ReadmeHistoryItem {
   pipelineVersion?: string;
 }
 
-export const useHistory = (userEmail: string) => {
+export const useHistory = (userEmail: string, shouldPoll: boolean = false) => {
   const [historyItems, setHistoryItems] = useState<ReadmeHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress] = useState<string | null>(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   function processUrl(s3Url: string): string {
     if (s3Url.includes("d2j9jbqms8047w.cloudfront.net")) {
@@ -37,9 +38,7 @@ export const useHistory = (userEmail: string) => {
         "d2j9jbqms8047w.cloudfront.net",
         "d3in1w40kamst9.cloudfront.net"
       );
-    }
-
-    console.log("changed Url: ", s3Url);
+    } else console.log("NO NEED ");
     return s3Url;
   }
 
@@ -53,11 +52,11 @@ export const useHistory = (userEmail: string) => {
       setLoading(true);
       setError(null);
 
-      console.log("🔍 FIXED DASHBOARD - Fetching history for user:", userEmail);
+      console.log("🔍 HISTORY HOOK - Fetching history for user:", userEmail);
 
-      // Use the Next.js API proxy to avoid CORS issues - FIXED
+      // Use the Next.js API proxy to avoid CORS issues
       const apiUrl = `/api/history?userId=${encodeURIComponent(userEmail)}`;
-      console.log("🔍 FIXED DASHBOARD - API URL:", apiUrl);
+      console.log("🔍 HISTORY HOOK - API URL:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "GET",
@@ -68,46 +67,44 @@ export const useHistory = (userEmail: string) => {
         },
       });
 
-      console.log("🔍 FIXED DASHBOARD - Response status:", response.status);
+      console.log("🔍 HISTORY HOOK - Response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ FIXED DASHBOARD - API Error:", errorText);
+        console.error("❌ HISTORY HOOK - API Error:", errorText);
         throw new Error(
           `Failed to fetch history: ${response.status} - ${errorText}`
         );
       }
 
       const data = await response.json();
-      console.log("🔍 FIXED DASHBOARD - Response data:", data);
+      console.log("🔍 HISTORY HOOK - Response data:", data);
 
-      const items = data.items || [];
-      console.log("🔍 FIXED DASHBOARD - History items count:", items.length);
+      // Handle the correct API response structure: data.data.history
+      const items = data?.data?.history || [];
+      console.log("🔍 HISTORY HOOK - History items count:", items.length);
 
       const transformedItems: ReadmeHistoryItem[] = items.map((item: any) => {
-        console.log("🔍 FIXED DASHBOARD - Transforming item:", item);
+        console.log("🔍 HISTORY HOOK - Transforming item:", item);
 
         return {
-          requestId: item.requestId,
+          requestId: item.requestId || item.repoId,
           repoName: item.repoName,
           repoUrl: item.repoUrl,
           status: item.status || "completed",
           createdAt: item.createdAt,
-          completedAt: item.completedAt || item.generationTimestamp,
+          completedAt: item.updatedAt || item.createdAt,
           processingTime: item.processingTime,
-          projectType: item.projectType,
-          primaryLanguage: item.primaryLanguage,
+          projectType: item.projectType || "Unknown",
+          primaryLanguage: item.primaryLanguage || "Unknown",
           frameworks: Array.isArray(item.frameworks) ? item.frameworks : [],
-          confidence:
-            typeof item.confidence === "object"
-              ? item.confidence.projectType || item.confidence.language || 0
-              : item.confidence || 0,
+          confidence: item.confidence || 0,
           readmeLength: item.readmeLength,
-          readmeS3Url: processUrl(item.readmeS3Url),
+          readmeS3Url: processUrl(item.readmeUrl || ""),
           error: item.error,
           userId: item.userId,
-          generationTimestamp: item.generationTimestamp,
-          analysisMethod: item.analysisMethod,
+          generationTimestamp: item.updatedAt || item.createdAt,
+          analysisMethod: item.generationMethod || item.analysisMethod,
           frameworkConfidence: item.frameworkConfidence || {},
           emailSent: item.emailSent,
           pipelineVersion: item.pipelineVersion,
@@ -121,16 +118,17 @@ export const useHistory = (userEmail: string) => {
       );
 
       setHistoryItems(transformedItems);
+      setInitialLoadComplete(true);
       console.log(
-        "✅ FIXED DASHBOARD - Successfully loaded history items:",
+        "✅ HISTORY HOOK - Successfully loaded history items:",
         transformedItems.length
       );
 
       if (transformedItems.length === 0) {
-        console.log("ℹ️ FIXED DASHBOARD - No history items found for user");
+        console.log("ℹ️ HISTORY HOOK - No history items found for user");
       }
     } catch (err) {
-      console.error("❌ FIXED DASHBOARD - Error fetching history:", err);
+      console.error("❌ HISTORY HOOK - Error fetching history:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch history");
       toast.error("Failed to load history");
     } finally {
@@ -182,20 +180,34 @@ export const useHistory = (userEmail: string) => {
     }
   };
 
-  // Refresh history every 10 seconds to catch new completions and processing updates
+  // Smart polling logic: only poll when needed
   useEffect(() => {
     if (!userEmail) return;
 
-    fetchHistory();
-
-    // More frequent polling for better UX during processing
-    const interval = setInterval(() => {
-      console.log("🔄 FIXED DASHBOARD - Auto-refreshing history");
+    // Always fetch on initial load
+    if (!initialLoadComplete) {
+      console.log("🚀 HISTORY HOOK - Initial load for user:", userEmail);
       fetchHistory();
-    }, 10000); // 10 seconds for more responsive updates
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, [userEmail, fetchHistory]);
+    // Only set up polling if shouldPoll is true (during generation)
+    if (shouldPoll) {
+      console.log("🔄 HISTORY HOOK - Starting polling (generation in progress)");
+      
+      const interval = setInterval(() => {
+        console.log("🔄 HISTORY HOOK - Polling for updates during generation");
+        fetchHistory();
+      }, 10000); // Poll every 10 seconds during generation
+
+      return () => {
+        console.log("🛑 HISTORY HOOK - Stopping polling (generation completed)");
+        clearInterval(interval);
+      };
+    } else {
+      console.log("ℹ️ HISTORY HOOK - No polling needed (no active generation)");
+    }
+  }, [userEmail, fetchHistory, shouldPoll, initialLoadComplete]);
 
   return {
     historyItems,
@@ -206,5 +218,6 @@ export const useHistory = (userEmail: string) => {
     deleteHistoryItem,
     copyToClipboard,
     downloadReadme,
+    initialLoadComplete,
   };
 };

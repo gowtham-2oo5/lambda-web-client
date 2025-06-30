@@ -39,8 +39,9 @@ export const useReadmeGenerator = () => {
     async (githubUrl: string, userEmail: string, executionArn: string) => {
       try {
         const headers = await getAuthHeaders();
-        const repoName = githubUrl.split('/').slice(-2).join('/');
-        const requestId = executionArn.split(':').pop() || Date.now().toString();
+        const repoName = githubUrl.split("/").slice(-2).join("/");
+        const requestId =
+          executionArn.split(":").pop() || Date.now().toString();
 
         const initialRecord = {
           userId: userEmail,
@@ -50,7 +51,7 @@ export const useReadmeGenerator = () => {
           status: "processing",
           createdAt: new Date().toISOString(),
           executionArn: executionArn,
-          pipelineVersion: "ultimate_enterprise_v1.0"
+          pipelineVersion: "ultimate_enterprise_v1.0",
         };
 
         console.log("🔧 Creating initial DynamoDB record:", initialRecord);
@@ -118,15 +119,52 @@ export const useReadmeGenerator = () => {
           const statusData = await statusResponse.json();
           console.log("🔧 Status check result:", statusData);
 
+          // Handle different response structures
+          if (statusData.status === "FAILED" || statusData.cause) {
+            // Handle Step Functions execution failures
+            console.error("🚨 Step Functions execution failed:", statusData);
+
+            // Extract error message from the nested structure
+            const errorMessage =
+              statusData.cause || statusData.error || "Unknown workflow error";
+
+            // Parse the error to provide user-friendly messages
+            if (errorMessage.includes("JSONPath")) {
+              throw new Error(
+                "Internal workflow configuration error. The backend service needs to be updated."
+              );
+            } else if (errorMessage.includes("Lambda")) {
+              throw new Error(
+                "Service temporarily unavailable. Please try again in a few moments."
+              );
+            } else if (errorMessage.includes("States.Runtime")) {
+              throw new Error(
+                "Workflow execution error. Please try again or contact support."
+              );
+            } else {
+              throw new Error(`README generation failed: ${errorMessage}`);
+            }
+          }
+
           if (statusData.status === "SUCCEEDED") {
             let output;
             try {
-              output = statusData.output
-                ? JSON.parse(statusData.output)
-                : statusData;
-            } catch {
+              // Handle both string and object outputs
+              if (typeof statusData.output === "string") {
+                output = JSON.parse(statusData.output);
+              } else {
+                output = statusData.output;
+              }
+
+              // If output has a body field, extract it
+              if (output && output.body && typeof output.body === "object") {
+                output = output.body;
+              }
+
+              console.log("🔧 Parsed output:", output);
+            } catch (parseError) {
               console.log(
-                "🔧 Output is not JSON, using as-is:",
+                "🔧 Output parsing failed, using as-is:",
                 statusData.output
               );
               output = statusData;
@@ -153,7 +191,7 @@ export const useReadmeGenerator = () => {
             attempts < maxAttempts
           ) {
             console.log(`🔧 Still running, attempt ${attempts}/${maxAttempts}`);
-            setTimeout(poll, 5000); // Poll every 5 seconds
+            setTimeout(poll, 5000);
           } else if (attempts >= maxAttempts) {
             setError("Execution timeout - process took too long to complete");
             setLoading(false);
@@ -191,7 +229,7 @@ export const useReadmeGenerator = () => {
               `🔧 Retrying after error (attempt ${attempts}/3):`,
               err.message
             );
-            setTimeout(poll, 10000); // Wait 10 seconds before retry
+            setTimeout(poll, 20000); // Wait 10 seconds before retry
           } else {
             setError(err.message);
             setLoading(false);

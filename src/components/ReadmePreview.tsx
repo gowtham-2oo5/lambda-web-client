@@ -12,13 +12,33 @@ interface ReadmePreviewProps {
   metadata: {
     repoName: string;
     repoUrl: string;
-    owner: string;
-    generatedAt: string;
+    repoOwner: string;
+    userId: string;
+    repoId: string;
+    createdAt: string;
+    updatedAt: string;
+    lastAccessedAt: string;
     projectType: string;
     primaryLanguage: string;
-    frameworks: string[];
-    confidence: number;
+    techStack: string[];
+    accuracyLevel: string;
+    confidenceScore: number;
+    qualityScore: string;
     processingTime: number;
+    filesAnalyzedCount: number;
+    readmeLength: number;
+    readmeUrl: string;
+    status: string;
+    version: string;
+    analysisMethod: string;
+    generationMethod: string;
+    analysisComplete: boolean;
+    hallucinationPrevented: boolean;
+    realContentAnalyzed: boolean;
+    performanceMetrics: any;
+    sourceFilesAnalyzed: string[];
+    requestId: string;
+    ttl: number;
   };
 }
 
@@ -131,29 +151,30 @@ const ReadmePreview: React.FC<ReadmePreviewProps> = ({ content, metadata }) => {
                   
                   <div>
                     <label className="text-sm font-medium text-slate-600">Owner</label>
-                    <p className="text-sm text-slate-900">{metadata.owner}</p>
+                    <p className="text-sm text-slate-900">{metadata.repoOwner}</p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Project Type</label>
-                    <p className="text-sm text-slate-900">{metadata.projectType}</p>
+                    <label className="text-sm font-medium text-slate-600">Language</label>
+                    <p className="text-sm text-slate-900">
+                      {metadata.primaryLanguage && metadata.primaryLanguage !== "Unknown" 
+                        ? metadata.primaryLanguage 
+                        : metadata.techStack && metadata.techStack.length > 0 
+                          ? metadata.techStack.join(", ")
+                          : "Mixed"}
+                    </p>
                   </div>
                   
-                  <div>
-                    <label className="text-sm font-medium text-slate-600">Primary Language</label>
-                    <p className="text-sm text-slate-900">{metadata.primaryLanguage}</p>
-                  </div>
-                  
-                  {metadata.frameworks && metadata.frameworks.length > 0 && (
+                  {metadata.techStack && metadata.techStack.length > 0 && (
                     <div>
-                      <label className="text-sm font-medium text-slate-600">Frameworks</label>
+                      <label className="text-sm font-medium text-slate-600">Tech Stack</label>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {metadata.frameworks.map((framework, index) => (
+                        {metadata.techStack.map((tech, index) => (
                           <span
                             key={index}
                             className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
                           >
-                            {framework}
+                            {tech}
                           </span>
                         ))}
                       </div>
@@ -161,37 +182,31 @@ const ReadmePreview: React.FC<ReadmePreviewProps> = ({ content, metadata }) => {
                   )}
                   
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Generated</label>
-                    <p className="text-sm text-slate-900">
-                      {new Date(metadata.generatedAt).toLocaleDateString()}
-                    </p>
+                    <label className="text-sm font-medium text-slate-600">Quality Score</label>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-semibold text-slate-900 capitalize">{metadata.qualityScore}</span>
+                      <span className="text-xs text-slate-600">({metadata.confidenceScore}%)</span>
+                    </div>
                   </div>
                   
-                  {metadata.processingTime > 0 && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600">Processing Time</label>
-                      <p className="text-sm text-slate-900">
-                        {metadata.processingTime.toFixed(1)}s
-                      </p>
-                    </div>
-                  )}
-                  
-                  {metadata.confidence > 0 && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600">Confidence</label>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex-1 bg-slate-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full"
-                            style={{ width: `${metadata.confidence * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-sm text-slate-900">
-                          {Math.round(metadata.confidence * 100)}%
-                        </span>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Analysis</label>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600">{metadata.filesAnalyzedCount} files analyzed</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600">{metadata.processingTime}s processing</span>
                       </div>
                     </div>
-                  )}
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Generated</label>
+                    <p className="text-sm text-slate-900">
+                      {new Date(metadata.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

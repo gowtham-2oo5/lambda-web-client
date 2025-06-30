@@ -92,7 +92,7 @@ export const useReadmeGeneratorSimple = () => {
       } catch (err: any) {
         console.error('Polling error:', err);
         if (attempts < 3) {
-          setTimeout(poll, 10000); // Retry after 10 seconds
+          setTimeout(poll, 20000); // Retry after 10 seconds
         } else {
           setError(err.message);
           setLoading(false);

@@ -3,7 +3,7 @@
 // Force dynamic rendering to avoid build-time AWS SDK issues
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, RefreshCw, FileText, History } from "lucide-react";
+import {
+  LogOut,
+  User,
+  RefreshCw,
+  FileText,
+  History,
+  Monitor,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useHistory } from "@/hooks/useHistory";
@@ -32,12 +39,14 @@ export default function DashboardPage() {
   const [user, setUser] = useState<CognitoUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const wasGeneratorLoading = useRef(false); // Move useRef to component level
 
   // Get user email for history hook - FIXED
   const userEmail = user?.email || "";
 
   // Get generator progress for active processing items
-  const { progress: generatorProgress, loading: generatorLoading } = useReadmeGenerator();
+  const { progress: generatorProgress, loading: generatorLoading } =
+    useReadmeGenerator();
 
   const {
     historyItems: history,
@@ -46,7 +55,19 @@ export default function DashboardPage() {
     refetch: fetchHistory,
     deleteHistoryItem,
     copyToClipboard,
-  } = useHistory(userEmail);
+  } = useHistory(userEmail, generatorLoading); // Pass generatorLoading to control polling
+
+  // Debug logging for history data
+  useEffect(() => {
+    console.log("🔍 DASHBOARD DEBUG - User email:", userEmail);
+    console.log("🔍 DASHBOARD DEBUG - History loading:", historyLoading);
+    console.log("🔍 DASHBOARD DEBUG - History error:", historyError);
+    console.log("🔍 DASHBOARD DEBUG - History items:", history);
+    console.log(
+      "🔍 DASHBOARD DEBUG - History items length:",
+      history?.length || 0
+    );
+  }, [userEmail, historyLoading, historyError, history]);
 
   // Check authentication and load user data
   useEffect(() => {
@@ -81,6 +102,21 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
+  // Refresh history when generation completes
+  useEffect(() => {
+    if (generatorLoading) {
+      wasGeneratorLoading.current = true;
+    } else if (wasGeneratorLoading.current && !generatorLoading) {
+      // Generation just completed
+      console.log("🎉 DASHBOARD - Generation completed, refreshing history");
+      setTimeout(() => {
+        fetchHistory();
+        toast.success("History updated with new README");
+      }, 2000); // Wait 2 seconds for backend to process
+      wasGeneratorLoading.current = false;
+    }
+  }, [generatorLoading, fetchHistory]);
+
   const handleSignOut = async () => {
     try {
       await cognitoAuth.signOut();
@@ -95,6 +131,33 @@ export default function DashboardPage() {
   const handleRefresh = () => {
     fetchHistory();
     toast.success("History refreshed");
+  };
+
+  // Debug function to test API directly
+  const handleTestAPI = async () => {
+    console.log("🧪 DASHBOARD - Testing API directly");
+    try {
+      const apiUrl = `/api/history?userId=${encodeURIComponent(userEmail)}`;
+      console.log("🧪 DASHBOARD - API URL:", apiUrl);
+
+      const response = await fetch(apiUrl);
+      console.log("🧪 DASHBOARD - Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("🧪 DASHBOARD - Raw API response:", data);
+        toast.success(
+          `API test successful! Found ${data?.data?.history?.length || 0} items`
+        );
+      } else {
+        const errorText = await response.text();
+        console.error("🧪 DASHBOARD - API error:", errorText);
+        toast.error("API test failed");
+      }
+    } catch (error) {
+      console.error("🧪 DASHBOARD - Test error:", error);
+      toast.error("API test error");
+    }
   };
 
   // Use the hook functions directly - FIXED
@@ -155,6 +218,15 @@ export default function DashboardPage() {
                 className={`w-4 h-4 ${historyLoading ? "animate-spin" : ""}`}
               />
               <span>Refresh</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleTestAPI}
+              className="flex items-center space-x-2 bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
+            >
+              <Monitor className="w-4 h-4" />
+              <span>Test API</span>
             </Button>
 
             <Button
@@ -247,7 +319,11 @@ export default function DashboardPage() {
                     item={item}
                     onCopy={handleCopy}
                     onDelete={handleDelete}
-                    progress={item.status === 'processing' && generatorLoading ? generatorProgress : null}
+                    progress={
+                      item.status === "processing" && generatorLoading
+                        ? generatorProgress
+                        : null
+                    }
                   />
                 ))}
               </div>
