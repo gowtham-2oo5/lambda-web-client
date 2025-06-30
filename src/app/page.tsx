@@ -26,7 +26,7 @@ import { useRef, forwardRef, useEffect, useState } from "react";
 import { AnimatedBeam } from "@/components/magicui/animated-beam";
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { cn } from "@/lib/utils";
-import PreviewNavigation from "@/components/PreviewNavigation";
+// import PreviewNavigation from "@/components/PreviewNavigation";
 import PreviewTest from "@/components/PreviewTest";
 
 const Circle = forwardRef<
@@ -144,30 +144,49 @@ export default function LandingPage() {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            The world's most sophisticated README generator powered by <strong>Claude Sonnet 4 AI</strong>, 
-            <strong> multi-model consensus validation</strong>, and enterprise-grade AWS serverless architecture. 
-            Delivering <strong>95% accuracy</strong> with <strong>16-second processing</strong> times.
+            The world's most sophisticated README generator powered by{" "}
+            <strong>Claude Sonnet 4 AI</strong>,
+            <strong> multi-model consensus validation</strong>, and
+            enterprise-grade AWS serverless architecture. Delivering{" "}
+            <strong>95% accuracy</strong> with{" "}
+            <strong>16-second processing</strong> times.
           </p>
 
           {/* Performance Stats */}
-          <div className={`grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div
+            className={`grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto transition-all duration-1000 delay-500 ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
             <div className="text-center">
-              <div className="text-3xl font-bold text-neutral-900 mb-1">16s</div>
+              <div className="text-3xl font-bold text-neutral-900 mb-1">
+                16s
+              </div>
               <div className="text-sm text-neutral-600">Processing Time</div>
               <div className="text-xs text-neutral-500">74% faster than v1</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-neutral-900 mb-1">95%</div>
+              <div className="text-3xl font-bold text-neutral-900 mb-1">
+                95%
+              </div>
               <div className="text-sm text-neutral-600">AI Accuracy</div>
-              <div className="text-xs text-neutral-500">Multi-model consensus</div>
+              <div className="text-xs text-neutral-500">
+                Multi-model consensus
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-neutral-900 mb-1">$0.15</div>
+              <div className="text-3xl font-bold text-neutral-900 mb-1">
+                $0.15
+              </div>
               <div className="text-sm text-neutral-600">Cost per README</div>
               <div className="text-xs text-neutral-500">Enterprise pricing</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-neutral-900 mb-1">99.9%</div>
+              <div className="text-3xl font-bold text-neutral-900 mb-1">
+                99.9%
+              </div>
               <div className="text-sm text-neutral-600">Uptime SLA</div>
               <div className="text-xs text-neutral-500">AWS serverless</div>
             </div>
@@ -379,7 +398,7 @@ export default function LandingPage() {
                   Multi-Model AI Consensus
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Claude Sonnet 4 powered analysis with multi-model validation, 
+                  Claude Sonnet 4 powered analysis with multi-model validation,
                   pattern intelligence, and real-time learning capabilities
                 </CardDescription>
               </CardHeader>
@@ -394,7 +413,7 @@ export default function LandingPage() {
                   Enterprise Documentation
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Professional multi-format output (MD, HTML, TXT) with 
+                  Professional multi-format output (MD, HTML, TXT) with
                   comprehensive audit trails and quality assurance
                 </CardDescription>
               </CardHeader>
@@ -409,7 +428,7 @@ export default function LandingPage() {
                   CloudFront CDN Delivery
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Global content delivery with S3 storage, professional email 
+                  Global content delivery with S3 storage, professional email
                   notifications, and instant download capabilities
                 </CardDescription>
               </CardHeader>
@@ -424,7 +443,7 @@ export default function LandingPage() {
                   16-Second Processing
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Enterprise-grade Step Functions orchestration with 74% 
+                  Enterprise-grade Step Functions orchestration with 74%
                   performance improvement over previous versions
                 </CardDescription>
               </CardHeader>
@@ -439,7 +458,7 @@ export default function LandingPage() {
                   Advanced Framework Detection
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Supports 10+ languages and 15+ frameworks including React, 
+                  Supports 10+ languages and 15+ frameworks including React,
                   Vue, Angular, Django, Spring Boot, and more
                 </CardDescription>
               </CardHeader>
@@ -454,7 +473,7 @@ export default function LandingPage() {
                   DynamoDB History Tracking
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Complete generation history with AWS Cognito authentication, 
+                  Complete generation history with AWS Cognito authentication,
                   comprehensive monitoring, and enterprise-grade security
                 </CardDescription>
               </CardHeader>
@@ -474,8 +493,9 @@ export default function LandingPage() {
             Experience Enterprise-Grade Documentation
           </h2>
           <p className="text-xl md:text-2xl text-neutral-600 mb-12 font-light leading-relaxed max-w-3xl mx-auto">
-            Join the next generation of developers using AI-powered documentation 
-            with 95% accuracy, 16-second processing, and enterprise reliability
+            Join the next generation of developers using AI-powered
+            documentation with 95% accuracy, 16-second processing, and
+            enterprise reliability
           </p>
           <Link href="/dashboard">
             <Button
@@ -507,8 +527,8 @@ export default function LandingPage() {
       </footer>
 
       {/* Preview Navigation - Development Helper */}
-      <PreviewNavigation />
-      
+      {/* <PreviewNavigation /> */}
+
       {/* Preview Test - Quick Test */}
       <PreviewTest />
     </div>
