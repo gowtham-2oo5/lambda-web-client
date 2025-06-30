@@ -16,13 +16,13 @@ import { Badge } from "@/components/ui/badge";
 import { LogOut, User, RefreshCw, FileText, History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useHistoryDashboard } from "@/hooks/useHistoryDashboard";
-import { cognitoAuth, CognitoUser } from "@/lib/cognito-fixed";
+import { useHistory } from "@/hooks/useHistory";
+import { cognitoAuth, CognitoUser } from "@/lib/cognito";
 
 // Import our modular components
 import GeneratorForm from "@/components/dashboard/GeneratorForm";
 import StatsCards from "@/components/dashboard/StatsCards";
-import HistoryItemCardSimple from "@/components/dashboard/HistoryItemCardSimple";
+import HistoryItemCard from "@/components/dashboard/HistoryItemCard";
 // import DashboardDebug from "@/components/dashboard/DashboardDebug";
 
 // Remove the duplicate interface definition since it's now in types/dashboard.ts
@@ -42,7 +42,7 @@ export default function DashboardPage() {
     refetch: fetchHistory,
     deleteHistoryItem,
     copyToClipboard,
-  } = useHistoryDashboard(userEmail);
+  } = useHistory(userEmail);
 
   // Check authentication and load user data
   useEffect(() => {
@@ -238,7 +238,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-6">
                 {(history || []).map((item) => (
-                  <HistoryItemCardSimple
+                  <HistoryItemCard
                     key={item.requestId}
                     item={item}
                     onCopy={handleCopy}

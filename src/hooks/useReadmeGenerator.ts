@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
-import { cognitoAuth } from "../lib/cognito-fixed";
+import { cognitoAuth } from "../lib/cognito";
 import { toast } from "sonner";
 
 // SECURE: Use API Gateway endpoints instead of direct AWS SDK
 const API_BASE_URL =
   "https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod";
 
-export const useReadmeGeneratorSecure = () => {
+export const useReadmeGenerator = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);

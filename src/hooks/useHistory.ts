@@ -25,7 +25,7 @@ export interface ReadmeHistoryItem {
   pipelineVersion?: string;
 }
 
-export const useHistoryDashboard = (userEmail: string) => {
+export const useHistory = (userEmail: string) => {
   const [historyItems, setHistoryItems] = useState<ReadmeHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

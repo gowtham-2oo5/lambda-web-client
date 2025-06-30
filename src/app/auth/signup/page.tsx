@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { FileText, Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { cognitoAuth } from "@/lib/cognito-fixed";
+import { cognitoAuth } from "@/lib/cognito";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({

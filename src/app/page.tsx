@@ -437,8 +437,9 @@ export default function LandingPage() {
                   Cost-Effective Solution
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  At $0.07 per generation, automated solution eliminates hours of manual README writing.
-                  Highly cost-effective compared to developer time spent on documentation
+                  At $0.07 per generation, automated solution eliminates hours
+                  of manual README writing. Highly cost-effective compared to
+                  developer time spent on documentation
                 </CardDescription>
               </CardHeader>
             </Card>

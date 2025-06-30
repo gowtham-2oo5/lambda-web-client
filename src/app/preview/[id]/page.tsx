@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import NaturalReadmePreview from "@/components/NaturalReadmePreview";
+import ReadmePreview from "@/components/ReadmePreview";
 
 interface PreviewData {
   id: string;
@@ -493,7 +493,7 @@ The README for this repository was generated, but the content is currently not a
   }
 
   return (
-    <NaturalReadmePreview
+    <ReadmePreview
       content={previewData.content}
       metadata={previewData.metadata}
     />

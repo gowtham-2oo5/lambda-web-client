@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import { generateS3PreviewUrl, generateHistoryPreviewUrl } from '@/utils/previewUrl';
+import { generateS3PreviewUrl, generateHistoryPreviewUrl } from '@/utils/preview-url';
 import { Eye, FileText, History, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 const PreviewDemoPage = () => {

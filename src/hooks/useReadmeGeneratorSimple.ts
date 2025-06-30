@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { cognitoAuth } from '../lib/cognito-fixed';
+import { cognitoAuth } from '../lib/cognito';
 
 const API_BASE_URL = 'https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod';
 

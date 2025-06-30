@@ -7,7 +7,7 @@ import { Copy, Download, ArrowLeft, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-interface NaturalReadmePreviewProps {
+interface ReadmePreviewProps {
   content: string;
   metadata: {
     repoName: string;
@@ -22,7 +22,7 @@ interface NaturalReadmePreviewProps {
   };
 }
 
-const NaturalReadmePreview: React.FC<NaturalReadmePreviewProps> = ({ content, metadata }) => {
+const ReadmePreview: React.FC<ReadmePreviewProps> = ({ content, metadata }) => {
   const router = useRouter();
 
   const handleCopy = async () => {
@@ -256,4 +256,4 @@ const NaturalReadmePreview: React.FC<NaturalReadmePreviewProps> = ({ content, me
   );
 };
 
-export default NaturalReadmePreview;
+export default ReadmePreview;

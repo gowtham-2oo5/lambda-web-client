@@ -1,29 +1,16 @@
-// Dynamic AWS SDK imports to avoid build-time issues
-let CognitoIdentityProviderClient: any,
-  InitiateAuthCommand: any,
-  SignUpCommand: any,
-  ConfirmSignUpCommand: any,
-  ResendConfirmationCodeCommand: any,
-  ForgotPasswordCommand: any,
-  ConfirmForgotPasswordCommand: any,
-  GetUserCommand: any,
-  GlobalSignOutCommand: any;
-const initializeAWS = async () => {
-  if (!CognitoIdentityProviderClient) {
-    const awsSdk = await import("@aws-sdk/client-cognito-identity-provider");
-    CognitoIdentityProviderClient = awsSdk.CognitoIdentityProviderClient;
-    InitiateAuthCommand = awsSdk.InitiateAuthCommand;
-    SignUpCommand = awsSdk.SignUpCommand;
-    ConfirmSignUpCommand = awsSdk.ConfirmSignUpCommand;
-    ResendConfirmationCodeCommand = awsSdk.ResendConfirmationCodeCommand;
-    ForgotPasswordCommand = awsSdk.ForgotPasswordCommand;
-    ConfirmForgotPasswordCommand = awsSdk.ConfirmForgotPasswordCommand;
-    GetUserCommand = awsSdk.GetUserCommand;
-    GlobalSignOutCommand = awsSdk.GlobalSignOutCommand;
-  }
-};
+import {
+  CognitoIdentityProviderClient,
+  InitiateAuthCommand,
+  SignUpCommand,
+  ConfirmSignUpCommand,
+  ResendConfirmationCodeCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
+  GetUserCommand,
+  GlobalSignOutCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 
-// Your Cognito configuration from AWS scan
+// FIXED: Your Cognito configuration
 const COGNITO_CONFIG = {
   region: "us-east-1",
   userPoolId: "us-east-1_AAAsvcGJ0",
@@ -32,18 +19,10 @@ const COGNITO_CONFIG = {
   clientName: "readme-generator-web-client",
 };
 
-// Initialize Cognito client dynamically
-let cognitoClient: any;
-
-const initializeCognitoClient = async () => {
-  if (!cognitoClient) {
-    await initializeAWS();
-    cognitoClient = new CognitoIdentityProviderClient({
-      region: COGNITO_CONFIG.region,
-    });
-  }
-  return cognitoClient;
-};
+// FIXED: Initialize Cognito client properly
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: COGNITO_CONFIG.region,
+});
 
 export interface CognitoUser {
   sub: string;
@@ -62,10 +41,9 @@ export interface AuthTokens {
 }
 
 class CognitoAuthService {
-  // Sign up new user
+  // FIXED: Sign up new user
   async signUp(email: string, password: string, name?: string) {
     try {
-      const client = await initializeCognitoClient();
       const command = new SignUpCommand({
         ClientId: COGNITO_CONFIG.clientId,
         Username: email,
@@ -79,45 +57,45 @@ class CognitoAuthService {
         ],
       });
 
-      const response = await client.send(command);
+      const response = await cognitoClient.send(command);
       return {
         success: true,
         userSub: response.UserSub,
         codeDeliveryDetails: response.CodeDeliveryDetails,
       };
     } catch (error: any) {
+      console.error("Sign up error:", error);
       return {
         success: false,
-        error: error.message || "Sign up failed",
+        error: this.getErrorMessage(error),
       };
     }
   }
 
-  // Confirm sign up with verification code
+  // FIXED: Confirm sign up with verification code
   async confirmSignUp(email: string, confirmationCode: string) {
     try {
-      const client = await initializeCognitoClient();
       const command = new ConfirmSignUpCommand({
         ClientId: COGNITO_CONFIG.clientId,
         Username: email,
         ConfirmationCode: confirmationCode,
       });
 
-      await client.send(command);
+      await cognitoClient.send(command);
       return { success: true };
     } catch (error: any) {
+      console.error("Confirmation error:", error);
       return {
         success: false,
-        error: error.message || "Confirmation failed",
+        error: this.getErrorMessage(error),
       };
     }
   }
 
-  // Sign in user
+  // FIXED: Sign in user with correct auth flow
   async signIn(email: string, password: string) {
     try {
-      const client = await initializeCognitoClient();
-      // Use ADMIN_NO_SRP_AUTH flow instead of USER_SRP_AUTH to avoid SRP complexity
+      // Use USER_PASSWORD_AUTH (this is the correct enum value)
       const command = new InitiateAuthCommand({
         ClientId: COGNITO_CONFIG.clientId,
         AuthFlow: "USER_PASSWORD_AUTH",
@@ -127,7 +105,7 @@ class CognitoAuthService {
         },
       });
 
-      const response = await client.send(command);
+      const response = await cognitoClient.send(command);
 
       if (response.AuthenticationResult) {
         const tokens: AuthTokens = {
@@ -136,129 +114,161 @@ class CognitoAuthService {
           refreshToken: response.AuthenticationResult.RefreshToken!,
         };
 
-        // Store tokens in localStorage
-        localStorage.setItem("cognito_tokens", JSON.stringify(tokens));
-        localStorage.setItem("auth_token", tokens.accessToken);
+        // Store tokens securely
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("cognito_tokens", JSON.stringify(tokens));
+          localStorage.setItem("auth_token", tokens.accessToken);
+        }
 
         // Get user info
-        const userInfo = await this.getCurrentUser();
-        if (userInfo.success) {
+        const userInfo = await this.getCurrentUser(tokens.accessToken);
+        if (userInfo.success && typeof window !== 'undefined') {
           localStorage.setItem("user_data", JSON.stringify(userInfo.user));
         }
 
         return {
           success: true,
           tokens,
-          user: userInfo.success ? userInfo.user : null,
+          user: userInfo.user,
+        };
+      } else {
+        return {
+          success: false,
+          error: "Authentication failed - no tokens received",
+        };
+      }
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      return {
+        success: false,
+        error: this.getErrorMessage(error),
+      };
+    }
+  }
+
+  // FIXED: Get current user info
+  async getCurrentUser(accessToken?: string) {
+    try {
+      const token = accessToken || (typeof window !== 'undefined' ? localStorage.getItem("auth_token") : null);
+      
+      if (!token) {
+        return {
+          success: false,
+          error: "No access token available",
         };
       }
 
-      return {
-        success: false,
-        error: "Authentication failed",
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || "Sign in failed",
-      };
-    }
-  }
-
-  // Get current user info
-  async getCurrentUser(): Promise<{
-    success: boolean;
-    user?: CognitoUser;
-    error?: string;
-  }> {
-    try {
-      const tokens = this.getStoredTokens();
-      if (!tokens) {
-        return { success: false, error: "No tokens found" };
-      }
-
-      const client = await initializeCognitoClient();
       const command = new GetUserCommand({
-        AccessToken: tokens.accessToken,
+        AccessToken: token,
       });
 
-      const response = await client.send(command);
-
+      const response = await cognitoClient.send(command);
+      
       const user: CognitoUser = {
-        sub: response.Username!,
-        email: this.getAttribute(response.UserAttributes, "email") || "",
-        name: this.getAttribute(response.UserAttributes, "name"),
-        given_name: this.getAttribute(response.UserAttributes, "given_name"),
-        family_name: this.getAttribute(response.UserAttributes, "family_name"),
-        email_verified:
-          this.getAttribute(response.UserAttributes, "email_verified") ===
-          "true",
-        preferred_username: this.getAttribute(
-          response.UserAttributes,
-          "preferred_username"
-        ),
+        sub: response.UserAttributes?.find(attr => attr.Name === 'sub')?.Value || '',
+        email: response.UserAttributes?.find(attr => attr.Name === 'email')?.Value || '',
+        name: response.UserAttributes?.find(attr => attr.Name === 'name')?.Value,
+        given_name: response.UserAttributes?.find(attr => attr.Name === 'given_name')?.Value,
+        family_name: response.UserAttributes?.find(attr => attr.Name === 'family_name')?.Value,
+        email_verified: response.UserAttributes?.find(attr => attr.Name === 'email_verified')?.Value === 'true',
+        preferred_username: response.UserAttributes?.find(attr => attr.Name === 'preferred_username')?.Value,
       };
 
-      return { success: true, user };
+      return {
+        success: true,
+        user,
+      };
     } catch (error: any) {
+      console.error("Get user error:", error);
       return {
         success: false,
-        error: error.message || "Failed to get user info",
+        error: this.getErrorMessage(error),
       };
     }
   }
 
-  // Sign out user
+  // FIXED: Sign out user
   async signOut() {
     try {
-      const tokens = this.getStoredTokens();
-      if (tokens) {
-        const client = await initializeCognitoClient();
+      const token = typeof window !== 'undefined' ? localStorage.getItem("auth_token") : null;
+      
+      if (token) {
         const command = new GlobalSignOutCommand({
-          AccessToken: tokens.accessToken,
+          AccessToken: token,
         });
-        await client.send(command);
+        await cognitoClient.send(command);
       }
-    } catch (error) {
+
+      // Clear local storage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("cognito_tokens");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_data");
+      }
+
+      return { success: true };
+    } catch (error: any) {
       console.error("Sign out error:", error);
-    } finally {
-      // Clear local storage regardless of API call success
-      localStorage.removeItem("cognito_tokens");
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_data");
+      // Still clear local storage even if API call fails
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("cognito_tokens");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_data");
+      }
+      return {
+        success: false,
+        error: this.getErrorMessage(error),
+      };
     }
   }
 
-  // Forgot password
-  async forgotPassword(email: string) {
+  // FIXED: Resend confirmation code
+  async resendConfirmationCode(email: string) {
     try {
-      const client = await initializeCognitoClient();
-      const command = new ForgotPasswordCommand({
+      const command = new ResendConfirmationCodeCommand({
         ClientId: COGNITO_CONFIG.clientId,
         Username: email,
       });
 
-      const response = await client.send(command);
+      const response = await cognitoClient.send(command);
       return {
         success: true,
         codeDeliveryDetails: response.CodeDeliveryDetails,
       };
     } catch (error: any) {
+      console.error("Resend code error:", error);
       return {
         success: false,
-        error: error.message || "Failed to send reset code",
+        error: this.getErrorMessage(error),
       };
     }
   }
 
-  // Confirm forgot password
-  async confirmForgotPassword(
-    email: string,
-    confirmationCode: string,
-    newPassword: string
-  ) {
+  // FIXED: Forgot password
+  async forgotPassword(email: string) {
     try {
-      const client = await initializeCognitoClient();
+      const command = new ForgotPasswordCommand({
+        ClientId: COGNITO_CONFIG.clientId,
+        Username: email,
+      });
+
+      const response = await cognitoClient.send(command);
+      return {
+        success: true,
+        codeDeliveryDetails: response.CodeDeliveryDetails,
+      };
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      return {
+        success: false,
+        error: this.getErrorMessage(error),
+      };
+    }
+  }
+
+  // FIXED: Confirm forgot password
+  async confirmForgotPassword(email: string, confirmationCode: string, newPassword: string) {
+    try {
       const command = new ConfirmForgotPasswordCommand({
         ClientId: COGNITO_CONFIG.clientId,
         Username: email,
@@ -266,73 +276,66 @@ class CognitoAuthService {
         Password: newPassword,
       });
 
-      await client.send(command);
+      await cognitoClient.send(command);
       return { success: true };
     } catch (error: any) {
+      console.error("Confirm forgot password error:", error);
       return {
         success: false,
-        error: error.message || "Failed to reset password",
+        error: this.getErrorMessage(error),
       };
     }
   }
 
-  // Resend confirmation code
-  async resendConfirmationCode(email: string) {
-    try {
-      const client = await initializeCognitoClient();
-      const command = new ResendConfirmationCodeCommand({
-        ClientId: COGNITO_CONFIG.clientId,
-        Username: email,
-      });
-
-      const response = await client.send(command);
-      return {
-        success: true,
-        codeDeliveryDetails: response.CodeDeliveryDetails,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || "Failed to resend code",
-      };
-    }
-  }
-
-  // Check if user is authenticated
+  // FIXED: Check if user is authenticated
   isAuthenticated(): boolean {
-    const tokens = this.getStoredTokens();
-    if (!tokens?.accessToken) return false;
+    if (typeof window === 'undefined') return false;
+    
+    const token = localStorage.getItem("auth_token");
+    const userData = localStorage.getItem("user_data");
+    
+    return !!(token && userData);
+  }
 
-    try {
-      // Basic JWT token validation (check if not expired)
-      const payload = JSON.parse(atob(tokens.accessToken.split(".")[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp > currentTime;
-    } catch {
-      return false;
+  // FIXED: Get stored user data
+  getStoredUser(): CognitoUser | null {
+    if (typeof window === 'undefined') return null;
+    
+    const userData = localStorage.getItem("user_data");
+    return userData ? JSON.parse(userData) : null;
+  }
+
+  // FIXED: Better error message handling
+  private getErrorMessage(error: any): string {
+    if (error.name === 'UserNotFoundException') {
+      return 'User not found. Please check your email or sign up.';
     }
-  }
-
-  // Get stored tokens
-  private getStoredTokens(): AuthTokens | null {
-    try {
-      const tokens = localStorage.getItem("cognito_tokens");
-      return tokens ? JSON.parse(tokens) : null;
-    } catch {
-      return null;
+    if (error.name === 'NotAuthorizedException') {
+      return 'Invalid email or password.';
     }
-  }
-
-  // Helper to get attribute value
-  private getAttribute(attributes: any[] | undefined, name: string): string {
-    return attributes?.find((attr) => attr.Name === name)?.Value;
-  }
-
-  // Get Cognito configuration (for debugging)
-  getConfig() {
-    return COGNITO_CONFIG;
+    if (error.name === 'UserNotConfirmedException') {
+      return 'Please verify your email before signing in.';
+    }
+    if (error.name === 'CodeMismatchException') {
+      return 'Invalid verification code.';
+    }
+    if (error.name === 'ExpiredCodeException') {
+      return 'Verification code has expired. Please request a new one.';
+    }
+    if (error.name === 'UsernameExistsException') {
+      return 'An account with this email already exists.';
+    }
+    if (error.name === 'InvalidPasswordException') {
+      return 'Password does not meet requirements.';
+    }
+    if (error.name === 'LimitExceededException') {
+      return 'Too many attempts. Please try again later.';
+    }
+    
+    return error.message || 'An unexpected error occurred.';
   }
 }
 
+// Export singleton instance
 export const cognitoAuth = new CognitoAuthService();
 export default cognitoAuth;
