@@ -115,7 +115,7 @@ export default function LandingPage() {
                 colorFrom="#6366f1"
                 colorTo="#8b5cf6"
               >
-                Enterprise Edition v3.0 • 95% AI Accuracy
+                AI Powered Smart README generator
               </AnimatedGradientText>
               <ArrowRight className="ml-2 size-4 text-neutral-500 transition-transform duration-300 group-hover:translate-x-1" />
             </div>
@@ -165,7 +165,9 @@ export default function LandingPage() {
                 &lt;30s
               </div>
               <div className="text-sm text-neutral-600">Processing Time</div>
-              <div className="text-xs text-neutral-500">Sub-30 second analysis</div>
+              <div className="text-xs text-neutral-500">
+                Sub-30 second analysis
+              </div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
@@ -181,14 +183,18 @@ export default function LandingPage() {
                 $0.07
               </div>
               <div className="text-sm text-neutral-600">Cost per README</div>
-              <div className="text-xs text-neutral-500">70% cheaper than alternatives</div>
+              <div className="text-xs text-neutral-500">
+                70% cheaper than alternatives
+              </div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
                 20+
               </div>
               <div className="text-sm text-neutral-600">READMEs Generated</div>
-              <div className="text-xs text-neutral-500">Real production usage</div>
+              <div className="text-xs text-neutral-500">
+                Real production usage
+              </div>
             </div>
           </div>
 
@@ -384,7 +390,8 @@ export default function LandingPage() {
               Technical Achievements
             </h2>
             <p className="text-xl md:text-2xl text-neutral-600 font-light max-w-3xl mx-auto">
-              Enterprise serverless architecture built by AWS Certified Developer in 2 weeks
+              Enterprise serverless architecture built by AWS Certified
+              Developer in 2 weeks
             </p>
           </div>
 
@@ -398,8 +405,9 @@ export default function LandingPage() {
                   6 AWS Lambda Functions
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Enterprise serverless architecture with Claude Sonnet 4 integration,
-                  multi-phase development evolved through 3 iterations for peak accuracy
+                  Enterprise serverless architecture with Claude Sonnet 4
+                  integration, multi-phase development evolved through 3
+                  iterations for peak accuracy
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -413,8 +421,9 @@ export default function LandingPage() {
                   Microsoft Projects Proven
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Generated READMEs for TypeScript, Calculator, VS Code projects.
-                  Live production system with real usage, not just a demo
+                  Generated READMEs for TypeScript, Calculator, VS Code
+                  projects. Live production system with real usage, not just a
+                  demo
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -425,11 +434,11 @@ export default function LandingPage() {
                   <Download className="w-7 h-7 text-blue-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  70% Cost Reduction
+                  Cost-Effective Solution
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Automated solution eliminates hours of manual README writing.
-                  $0.07 per generation - significantly cheaper than industry alternatives
+                  At $0.07 per generation, automated solution eliminates hours of manual README writing.
+                  Highly cost-effective compared to developer time spent on documentation
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -443,8 +452,9 @@ export default function LandingPage() {
                   Sub-30 Second Processing
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Fast repository analysis with enterprise Step Functions orchestration.
-                  Quality consistency and professional documentation every time
+                  Fast repository analysis with enterprise Step Functions
+                  orchestration. Quality consistency and professional
+                  documentation every time
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -458,8 +468,9 @@ export default function LandingPage() {
                   Production-Ready System
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Live system with proper monitoring, already helping developers with actual projects.
-                  Built on AWS with enterprise-grade reliability
+                  Live system with proper monitoring, already helping developers
+                  with actual projects. Built on AWS with enterprise-grade
+                  reliability
                 </CardDescription>
               </CardHeader>
             </Card>
