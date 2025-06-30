@@ -162,10 +162,10 @@ export default function LandingPage() {
           >
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
-                16s
+                &lt;30s
               </div>
               <div className="text-sm text-neutral-600">Processing Time</div>
-              <div className="text-xs text-neutral-500">74% faster than v1</div>
+              <div className="text-xs text-neutral-500">Sub-30 second analysis</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
@@ -178,17 +178,17 @@ export default function LandingPage() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
-                $0.15
+                $0.07
               </div>
               <div className="text-sm text-neutral-600">Cost per README</div>
-              <div className="text-xs text-neutral-500">Enterprise pricing</div>
+              <div className="text-xs text-neutral-500">70% cheaper than alternatives</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-neutral-900 mb-1">
-                99.9%
+                20+
               </div>
-              <div className="text-sm text-neutral-600">Uptime SLA</div>
-              <div className="text-xs text-neutral-500">AWS serverless</div>
+              <div className="text-sm text-neutral-600">READMEs Generated</div>
+              <div className="text-xs text-neutral-500">Real production usage</div>
             </div>
           </div>
 
@@ -381,10 +381,10 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold mb-6 text-neutral-900 tracking-tight">
-              Powerful Features
+              Technical Achievements
             </h2>
             <p className="text-xl md:text-2xl text-neutral-600 font-light max-w-3xl mx-auto">
-              Everything you need to create outstanding documentation
+              Enterprise serverless architecture built by AWS Certified Developer in 2 weeks
             </p>
           </div>
 
@@ -395,11 +395,11 @@ export default function LandingPage() {
                   <Zap className="w-7 h-7 text-indigo-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  Multi-Model AI Consensus
+                  6 AWS Lambda Functions
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Claude Sonnet 4 powered analysis with multi-model validation,
-                  pattern intelligence, and real-time learning capabilities
+                  Enterprise serverless architecture with Claude Sonnet 4 integration,
+                  multi-phase development evolved through 3 iterations for peak accuracy
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -410,11 +410,11 @@ export default function LandingPage() {
                   <FileText className="w-7 h-7 text-emerald-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  Enterprise Documentation
+                  Microsoft Projects Proven
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Professional multi-format output (MD, HTML, TXT) with
-                  comprehensive audit trails and quality assurance
+                  Generated READMEs for TypeScript, Calculator, VS Code projects.
+                  Live production system with real usage, not just a demo
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -425,11 +425,11 @@ export default function LandingPage() {
                   <Download className="w-7 h-7 text-blue-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  CloudFront CDN Delivery
+                  70% Cost Reduction
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Global content delivery with S3 storage, professional email
-                  notifications, and instant download capabilities
+                  Automated solution eliminates hours of manual README writing.
+                  $0.07 per generation - significantly cheaper than industry alternatives
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -440,11 +440,11 @@ export default function LandingPage() {
                   <Clock className="w-7 h-7 text-amber-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  16-Second Processing
+                  Sub-30 Second Processing
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
-                  Enterprise-grade Step Functions orchestration with 74%
-                  performance improvement over previous versions
+                  Fast repository analysis with enterprise Step Functions orchestration.
+                  Quality consistency and professional documentation every time
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -455,9 +455,14 @@ export default function LandingPage() {
                   <Github className="w-7 h-7 text-purple-600" />
                 </div>
                 <CardTitle className="text-neutral-900 text-xl mb-3 font-semibold">
-                  Advanced Framework Detection
+                  Production-Ready System
                 </CardTitle>
                 <CardDescription className="text-neutral-600 leading-relaxed text-base">
+                  Live system with proper monitoring, already helping developers with actual projects.
+                  Built on AWS with enterprise-grade reliability
+                </CardDescription>
+              </CardHeader>
+            </Card>
                   Supports 10+ languages and 15+ frameworks including React,
                   Vue, Angular, Django, Spring Boot, and more
                 </CardDescription>
