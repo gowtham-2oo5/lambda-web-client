@@ -1,38 +1,27 @@
 {
-  "version": 2,
-  "name": "smartreadmegen-web-client",
-  "builds": [
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/next"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     }
   ],
-  "routes": [
+  "headers": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     }
-  ],
-  "env": {
-    "NEXT_PUBLIC_AWS_REGION": "us-east-1",
-    "NEXT_PUBLIC_AWS_ACCESS_KEY_ID": "@aws-access-key-id",
-    "NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY": "@aws-secret-access-key",
-    "NEXT_PUBLIC_CLOUDFRONT_URL": "https://d3in1w40kamst9.cloudfront.net",
-    "DYNAMODB_HANDLER_FUNCTION_NAME": "smart-readme-dynamodb-handler",
-    "README_API_GATEWAY_NAME": "smart-readme-generator-api",
-    "README_LAMBDA_FUNCTION_NAME": "fresh-readme-generator",
-    "README_STEP_FUNCTION_NAME": "smart-readme-generator-workflow",
-    "SMART_README_LAMBDA_FUNCTION_NAME": "smart-readme-generator-lambda2"
-  },
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "regions": ["iad1"],
-  "framework": "nextjs"
+  ]
 }
