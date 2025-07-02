@@ -9,10 +9,7 @@ import {
   GetUserCommand,
   GlobalSignOutCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { config, validateConfig } from "./config";
-
-// Validate configuration on import
-validateConfig();
+import { config } from "./config";
 
 // SECURE: Initialize Cognito client using centralized config
 const cognitoClient = new CognitoIdentityProviderClient({

@@ -46,6 +46,11 @@ export const config = {
 
 // Validation function to ensure required environment variables are set
 export function validateConfig() {
+  // Skip validation during build time
+  if (typeof window === 'undefined') {
+    return;
+  }
+
   const requiredVars = [
     { key: "COGNITO_USER_POOL_ID", value: config.cognito.userPoolId },
     { key: "COGNITO_CLIENT_ID", value: config.cognito.clientId },
