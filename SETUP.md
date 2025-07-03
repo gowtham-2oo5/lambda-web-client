@@ -44,19 +44,15 @@ Ensure you have the following AWS resources set up:
 Update `.env.local` with your actual values:
 
 ```bash
-# Core AWS Configuration
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your_actual_access_key
 AWS_SECRET_ACCESS_KEY=your_actual_secret_key
 
-# Step Functions
 PHASE3_WORKFLOW_ARN=arn:aws:states:us-east-1:YOUR_ACCOUNT:stateMachine:complete-readme-generator-workflow
 
-# Cognito
 COGNITO_USER_POOL_ID=us-east-1_YourActualPoolId
 COGNITO_CLIENT_ID=your_actual_client_id
 
-# S3 & CloudFront
 PHASE3_S3_BUCKET=your-s3-bucket-name
 NEXT_PUBLIC_CLOUDFRONT_URL=https://your-cloudfront-domain.cloudfront.net
 ```
