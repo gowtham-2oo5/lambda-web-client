@@ -3,26 +3,53 @@ import { toast } from "sonner";
 
 export interface ReadmeHistoryItem {
   requestId: string;
+  repoId: string;
   repoName: string;
   repoUrl: string;
+  repoOwner: string;
   status: "processing" | "completed" | "failed";
   createdAt: string;
+  updatedAt: string;
   completedAt?: string;
   processingTime?: number;
   projectType?: string;
   primaryLanguage?: string;
   frameworks?: string[];
+  techStack?: string[];
   confidence?: number;
+  confidenceScore?: number;
+  accuracyPercentage?: number;
+  accuracyLevel?: string;
   readmeLength?: number;
-  readmeS3Url?: string;
+  readmeS3Url?: string; // Keep for backward compatibility
+  readmeUrl?: string; // New field name
+  readmeContent?: string;
+  readmePreview?: string;
   error?: string;
   content?: string;
   userId?: string;
   generationTimestamp?: string;
   analysisMethod?: string;
+  generationMethod?: string;
   frameworkConfidence?: Record<string, number>;
   emailSent?: boolean;
   pipelineVersion?: string;
+  version?: string;
+  branchUsed?: string;
+  filesAnalyzedCount?: number;
+  sourceFilesAnalyzed?: string[];
+  analysisComplete?: boolean;
+  realContentAnalyzed?: boolean;
+  hallucinationPrevented?: boolean;
+  qualityScore?: string;
+  accuracyBreakdown?: any;
+  performanceMetrics?: any;
+  s3Location?: {
+    bucket: string;
+    key: string;
+  };
+  ttl?: number;
+  lastAccessedAt?: string;
 }
 
 export const useHistory = (userEmail: string, shouldPoll: boolean = false) => {
@@ -79,35 +106,81 @@ export const useHistory = (userEmail: string, shouldPoll: boolean = false) => {
 
       const data = await response.json();
       console.log("🔍 HISTORY HOOK - Response data:", data);
+      console.log("🔍 HISTORY HOOK - data.data:", data?.data);
+      console.log("🔍 HISTORY HOOK - data.data.records:", data?.data?.records);
+      console.log("🔍 HISTORY HOOK - data.data.history:", data?.data?.history);
 
-      // Handle the correct API response structure: data.data.history
-      const items = data?.data?.history || [];
+      // Handle the correct API response structure: data.data.records (not history)
+      const items = data?.data?.records || data?.data?.history || [];
       console.log("🔍 HISTORY HOOK - History items count:", items.length);
 
       const transformedItems: ReadmeHistoryItem[] = items.map((item: any) => {
         console.log("🔍 HISTORY HOOK - Transforming item:", item);
 
         return {
+          // Primary identifiers - API already provides these correctly
           requestId: item.requestId || item.repoId,
+          repoId: item.repoId,
           repoName: item.repoName,
           repoUrl: item.repoUrl,
+          repoOwner: item.repoOwner,
+          
+          // Status and timing
           status: item.status || "completed",
           createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
           completedAt: item.updatedAt || item.createdAt,
-          processingTime: item.processingTime,
-          projectType: item.projectType || "Unknown",
-          primaryLanguage: item.primaryLanguage || "Unknown",
+          processingTime: Number(item.processingTime || 0),
+          
+          // Project analysis
+          projectType: item.projectType || "software_project",
+          primaryLanguage: item.primaryLanguage || "Mixed",
           frameworks: Array.isArray(item.frameworks) ? item.frameworks : [],
-          confidence: item.confidence || 0,
-          readmeLength: item.readmeLength,
-          readmeS3Url: processUrl(item.readmeUrl || ""),
-          error: item.error,
+          techStack: Array.isArray(item.techStack) ? item.techStack : [],
+          
+          // Quality metrics
+          confidence: Number(item.confidence || item.confidenceScore || 0),
+          confidenceScore: Number(item.confidenceScore || item.confidence || 0),
+          accuracyPercentage: Number(item.accuracyPercentage || 0),
+          accuracyLevel: item.accuracyLevel || "basic",
+          qualityScore: item.qualityScore || "basic",
+          
+          // README content - API provides readmeUrl directly
+          readmeLength: Number(item.readmeLength || 0),
+          readmeS3Url: processUrl(item.readmeUrl || ""), // For backward compatibility
+          readmeUrl: item.readmeUrl || "",
+          readmeContent: item.readmeContent,
+          readmePreview: item.readmePreview,
+          
+          // Analysis details
+          analysisMethod: item.analysisMethod || item.generationMethod,
+          generationMethod: item.generationMethod || item.analysisMethod,
+          filesAnalyzedCount: Number(item.filesAnalyzedCount || 0),
+          sourceFilesAnalyzed: Array.isArray(item.sourceFilesAnalyzed) ? item.sourceFilesAnalyzed : [],
+          analysisComplete: item.analysisComplete || false,
+          realContentAnalyzed: item.realContentAnalyzed || false,
+          hallucinationPrevented: item.hallucinationPrevented || false,
+          
+          // System metadata
           userId: item.userId,
-          generationTimestamp: item.updatedAt || item.createdAt,
-          analysisMethod: item.generationMethod || item.analysisMethod,
-          frameworkConfidence: item.frameworkConfidence || {},
-          emailSent: item.emailSent,
+          version: item.version,
+          branchUsed: item.branchUsed || "main",
           pipelineVersion: item.pipelineVersion,
+          
+          // Complex objects
+          accuracyBreakdown: item.accuracyBreakdown,
+          performanceMetrics: item.performanceMetrics,
+          s3Location: item.s3Location,
+          frameworkConfidence: item.frameworkConfidence || {},
+          
+          // Additional fields
+          error: item.error,
+          emailSent: item.emailSent,
+          ttl: item.ttl,
+          lastAccessedAt: item.lastAccessedAt,
+          
+          // Legacy fields for backward compatibility
+          generationTimestamp: item.updatedAt || item.createdAt,
         };
       });
 
@@ -136,14 +209,17 @@ export const useHistory = (userEmail: string, shouldPoll: boolean = false) => {
     }
   }, [userEmail]);
 
-  const deleteHistoryItem = async (requestId: string) => {
+  const deleteHistoryItem = async (identifier: string) => {
     try {
-      console.log("🗑️ FIXED DASHBOARD - Deleting history item:", requestId);
+      console.log("🗑️ HISTORY HOOK - Deleting history item:", identifier);
 
       // TODO: Implement actual deletion API call
-      // For now, just remove from local state
+      // For now, just remove from local state using either repoId or requestId
       setHistoryItems((prev) =>
-        prev.filter((item) => item.requestId !== requestId)
+        prev.filter((item) => 
+          item.repoId !== identifier && 
+          item.requestId !== identifier
+        )
       );
       toast.success("History item deleted");
     } catch (err) {

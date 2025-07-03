@@ -35,10 +35,12 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
   const router = useRouter();
 
   const handleCopy = async () => {
-    // Simply fetch from readmeS3Url using proxy
-    if (item.readmeS3Url) {
+    // Try the new readmeUrl field first, then fall back to readmeS3Url
+    const contentUrl = item.readmeUrl || item.readmeS3Url;
+    
+    if (contentUrl) {
       try {
-        const proxyResponse = await fetch(`/api/proxy-s3?url=${encodeURIComponent(item.readmeS3Url)}`);
+        const proxyResponse = await fetch(`/api/proxy-s3?url=${encodeURIComponent(contentUrl)}`);
         if (proxyResponse.ok) {
           const proxyData = await proxyResponse.json();
           if (proxyData.content) {
@@ -51,17 +53,25 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
       }
     }
     
+    // If we have readmeContent directly, use that
+    if (item.readmeContent) {
+      onCopy(item.readmeContent);
+      return;
+    }
+    
     // Fallback
     onCopy(`# ${item.repoName}\n\nContent not available`);
   };
 
   const handleDownload = async () => {
-    // Simply fetch from readmeS3Url using proxy
-    if (item.readmeS3Url) {
+    // Try the new readmeUrl field first, then fall back to readmeS3Url
+    const contentUrl = item.readmeUrl || item.readmeS3Url;
+    
+    if (contentUrl) {
       try {
-        console.log('🔍 DOWNLOAD DEBUG - Fetching from S3 URL:', item.readmeS3Url);
+        console.log('🔍 DOWNLOAD DEBUG - Fetching from URL:', contentUrl);
         
-        const proxyResponse = await fetch(`/api/proxy-s3?url=${encodeURIComponent(item.readmeS3Url)}`);
+        const proxyResponse = await fetch(`/api/proxy-s3?url=${encodeURIComponent(contentUrl)}`);
         if (proxyResponse.ok) {
           const proxyData = await proxyResponse.json();
           if (proxyData.content) {
@@ -75,6 +85,10 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
         console.error('Download error:', error);
         toast.error('Failed to download README');
       }
+    } else if (item.readmeContent) {
+      // If we have readmeContent directly, use that
+      downloadFile(item.readmeContent, item.repoName);
+      toast.success('README downloaded successfully!');
     } else {
       // Fallback
       const content = `# ${item.repoName}\n\nContent not available`;
@@ -102,7 +116,8 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
 
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this README generation record?')) {
-      onDelete(item.requestId);
+      // Use repoId as the primary identifier for deletion
+      onDelete(item.repoId || item.requestId);
     }
   };
 
@@ -115,25 +130,29 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
     console.log("🔍 FULL PREVIEW DEBUG - Complete item object:");
     console.log(JSON.stringify(item, null, 2));
     console.log("🔍 FULL PREVIEW DEBUG - Item keys:", Object.keys(item));
+    console.log("🔍 FULL PREVIEW DEBUG - readmeUrl field:", item.readmeUrl);
     console.log("🔍 FULL PREVIEW DEBUG - readmeS3Url field:", item.readmeS3Url);
     
     // Pass metadata directly in URL params
     const params = new URLSearchParams({
       repoName: item.repoName || 'Unknown Repository',
       repoUrl: item.repoUrl || '#',
-      owner: item.repoUrl ? item.repoUrl.split('/')[3] || 'Unknown' : 'Unknown',
-      projectType: item.projectType || 'Unknown',
-      primaryLanguage: item.primaryLanguage || 'Unknown',
+      owner: item.repoOwner || (item.repoUrl ? item.repoUrl.split('/')[3] || 'Unknown' : 'Unknown'),
+      projectType: item.projectType || 'software_project',
+      primaryLanguage: item.primaryLanguage || 'Mixed',
       frameworks: (item.frameworks || []).join(','),
-      confidence: String(item.confidence || 0),
+      confidence: String(item.confidenceScore || item.confidence || 0),
+      accuracyPercentage: String(item.accuracyPercentage || 0),
       processingTime: String(item.processingTime || 0),
       createdAt: item.createdAt || new Date().toISOString(),
-      readmeS3Url: item.readmeS3Url || '',
-      status: item.status || 'completed'
+      readmeS3Url: item.readmeUrl || item.readmeS3Url || '', // Use new field first
+      status: item.status || 'completed',
+      qualityScore: item.qualityScore || 'basic',
+      analysisMethod: item.analysisMethod || item.generationMethod || 'unknown'
     });
     
     // Navigate to dynamic preview route with all metadata
-    const previewUrl = `/preview/${encodeURIComponent(item.requestId)}?${params.toString()}`;
+    const previewUrl = `/preview/${encodeURIComponent(item.repoId || item.requestId)}?${params.toString()}`;
     console.log("🔍 FULL PREVIEW DEBUG - Generated preview URL:", previewUrl);
     
     // Open in new tab only if item is still processing
@@ -187,10 +206,11 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
     }
   };
 
-  const formatProcessingTime = (seconds?: number) => {
-    if (!seconds) return 'N/A';
-    if (seconds < 60) return `${seconds.toFixed(1)}s`;
-    return `${Math.floor(seconds / 60)}m ${(seconds % 60).toFixed(0)}s`;
+  const formatProcessingTime = (seconds?: number | string) => {
+    const numSeconds = Number(seconds);
+    if (!numSeconds || isNaN(numSeconds)) return 'N/A';
+    if (numSeconds < 60) return `${numSeconds.toFixed(1)}s`;
+    return `${Math.floor(numSeconds / 60)}m ${(numSeconds % 60).toFixed(0)}s`;
   };
 
   return (
@@ -220,7 +240,7 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
                 </a>
               </div>
               
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 flex-wrap">
                 <div className="flex items-center space-x-1">
                   <Clock className="w-4 h-4" />
                   <span>Created: {formatDate(item.createdAt)}</span>
@@ -232,7 +252,39 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
                     <span>Processing: {formatProcessingTime(item.processingTime)}</span>
                   </div>
                 )}
+                
+                {item.accuracyPercentage && (
+                  <div className="flex items-center space-x-1">
+                    <span>🎯</span>
+                    <span>Accuracy: {Math.round(Number(item.accuracyPercentage) || 0)}%</span>
+                  </div>
+                )}
+                
+                {item.filesAnalyzedCount && (
+                  <div className="flex items-center space-x-1">
+                    <span>📁</span>
+                    <span>Files: {Number(item.filesAnalyzedCount) || 0}</span>
+                  </div>
+                )}
               </div>
+              
+              {item.qualityScore && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    item.qualityScore === 'premium' ? 'bg-green-100 text-green-800' :
+                    item.qualityScore === 'standard' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {item.qualityScore.charAt(0).toUpperCase() + item.qualityScore.slice(1)} Quality
+                  </span>
+                  
+                  {item.analysisMethod && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {item.analysisMethod.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

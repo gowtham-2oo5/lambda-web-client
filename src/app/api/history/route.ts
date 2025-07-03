@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
 
     console.log("🔍 PROXY API - Fetching history for user:", userId);
 
-    // PROPERLY encode the email for URL
+    // Use query parameter instead of path parameter
     const encodedUserId = encodeURIComponent(userId);
-    const apiUrl = `https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod/history/${encodedUserId}`;
+    const apiUrl = `https://ccki297o82.execute-api.us-east-1.amazonaws.com/prod/history?userId=${encodedUserId}`;
 
     console.log("🔍 PROXY API - Calling:", apiUrl);
     console.log("🔍 PROXY API - Original userId:", userId);
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     );
     
     // Handle the correct API response structure
-    const historyItems = data?.data?.history || [];
+    const historyItems = data?.data?.records || [];
     console.log(
       "✅ PROXY API - Success, history items:",
       historyItems.length

@@ -1,34 +1,74 @@
-// Dashboard types to match your DynamoDB structure
+// Dashboard types to match your updated DynamoDB structure
 
 export interface ReadmeHistoryItem {
+  // Primary identifiers
   userId: string;
   requestId: string;
-  repoUrl: string;
+  repoId: string;
   repoName: string;
+  repoUrl: string;
+  repoOwner: string;
+  
+  // Status and timing
   status: 'processing' | 'completed' | 'failed' | 'unknown';
   createdAt: string;
+  updatedAt: string;
   completedAt?: string;
   processingTime?: number;
-  content?: string;
-  error?: string;
-  executionArn?: string;
-  readmeS3Url?: string;
-  readmeContent?: string; // Added this field from DynamoDB
-  stage?: string;
-  updatedAt?: string;
-  lastProgress?: string;
-  // Additional fields from DynamoDB
+  
+  // Project analysis
   projectType?: string;
   primaryLanguage?: string;
   frameworks?: string[];
+  techStack?: string[];
+  
+  // Quality metrics
+  confidence?: number;
+  confidenceScore?: number;
+  accuracyPercentage?: number;
+  accuracyLevel?: string;
+  qualityScore?: string;
+  
+  // README content
   readmeLength?: number;
-  generationTimestamp?: string;
+  readmeS3Url?: string; // Keep for backward compatibility
+  readmeUrl?: string; // New field name
+  readmeContent?: string;
+  readmePreview?: string;
+  
+  // Analysis details
   analysisMethod?: string;
-  confidence?: {
-    projectType?: number;
-    language?: number;
+  generationMethod?: string;
+  filesAnalyzedCount?: number;
+  sourceFilesAnalyzed?: string[];
+  analysisComplete?: boolean;
+  realContentAnalyzed?: boolean;
+  hallucinationPrevented?: boolean;
+  
+  // System metadata
+  version?: string;
+  branchUsed?: string;
+  pipelineVersion?: string;
+  
+  // Complex objects
+  accuracyBreakdown?: any;
+  performanceMetrics?: any;
+  s3Location?: {
+    bucket: string;
+    key: string;
   };
   frameworkConfidence?: Record<string, number>;
+  
+  // Legacy and additional fields
+  content?: string;
+  error?: string;
+  executionArn?: string;
+  stage?: string;
+  lastProgress?: string;
+  generationTimestamp?: string;
+  emailSent?: boolean;
+  ttl?: number;
+  lastAccessedAt?: string;
 }
 
 export interface DashboardStats {
